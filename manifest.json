@@ -15,7 +15,7 @@
     {
       "matches": ["*://*.fanduel.com/games/*"],
       "css": ["alivescoring.css"],
-      "js": ["jquery.js", "alivescoring.js"],
+      "js": ["jquery.js", "alivescoring.js", "projectedpoints.js", "ppbasketball.js" ,"ppbaseball.js"],
       "run_at": "document_end"
     }
   ],

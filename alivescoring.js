@@ -7,10 +7,14 @@ $( document ).ready(function() {
 		myAliveScoring();
 
 		//Load comparison scoring if query str exists
-		if(getUrlVars() != null){}
+		if(getUrlVars() != null)
+			theirAliveScoring();
+		
+		if( $('.live-comparison-entry').hasClass('h2h-opponent') )
 			theirAliveScoring();
 		}
-		}, 100);
+		}, 2000);
+
 
 
 	//Check every two seconds for query change
@@ -28,11 +32,12 @@ $( document ).ready(function() {
 			}
 			}, 2000);
 	
-
 });
 
 function myAliveScoring() {
 
+
+	var myTotalProj = 0;
 	var myActualTotalSalary = 0;
 
 		//Add in Actual Salary (value of total pts/5)
@@ -47,15 +52,28 @@ function myAliveScoring() {
 			else
 					var color = "#444";
 
-			//Inject actual salary with color
+			//Inject actual salary with color - style="color:'+color+';
 			$(ele).find('.lineup__player-salary').after(
-				'<dl class="definition lineup__player-actual-salary"><dd class="definition__value" style="color:'+color+';">' + getActualSalary(score) + '</dd><dt class="definition__key">Value</dt></dl>'
+				'<dl class="definition lineup__player-actual-salary"><dd class="definition__value" >' + getActualSalary(score) + '</dd><dt class="definition__key">5x Salary</dt></dl>'
+				);
+
+			//Inject value multiple with color style="color:'+color+';
+			$(ele).find('.lineup__player-salary').after(
+				'<dl class="definition lineup__player-actual-salary"><dd class="definition__value" >' + getMultiple( getProjectedPoints(ele),salaryToInt(  $(ele).find('.lineup__player-salary').find('.definition__value').html())) +'x' +'</dd><dt class="definition__key">Proj Multi</dt></dl>'
 				);
 
 			//Total up actual salary to total for display
 				myActualTotalSalary += salaryToInt(getActualSalary(score));
-				
-	});
+
+			//Inject projected points
+
+			$(ele).find('.lineup__player-score').after(
+				'<dl class="definition lineup__player-proj-score lineup__player-score"><dd style="color:green !important;">' + getProjectedPoints(ele) +'</dd></dl>'
+				);
+			
+			if( !isNaN(getProjectedPoints(ele)) )
+				myTotalProj += getProjectedPoints(ele);
+	});//close each loop
 
 		//Add total actual salary, need to check to see if user is viewing their own or not (if it was their own they would have entry-id)
 		if ($('.contest-position-periods-remaining').find('.entry-id').length)
@@ -66,12 +84,16 @@ function myAliveScoring() {
 			$('.live-entry').find('.contest-position-periods-remaining').find('.user-winnings').after(
 				'<dl class="entry-detail entry-lurker-actual-value"><dd>'+intToSalary(myActualTotalSalary)+'</dd><dt>Actual Value</dt></dl>'
 				);
+
+
+		//Inject projected points
+		$('.live-entry').find('.score').append('<camel-number value="'+myTotalProj+'"><span class="camel-number" style="color:green !important;"><em> '+myTotalProj+'</em>.00</span></camel-number>');
 };
 
 function theirAliveScoring() {
 
 	var theirActualTotalSalary = 0;
-
+	var theirProjTotal = 0;
 		//Add in Actual Salary (value of total pts/5)
 	$('.live-comparison-entry').find('.lineup__player').each( function(num, ele) {
 
@@ -85,11 +107,21 @@ function theirAliveScoring() {
 			else
 					var color = "#444";
 
-			//Inject actual salary with color
+			//Inject actual salary with color - style="color:'+color+';
 			$(ele).find('.lineup__player-salary').after(
-				'<dl class="definition lineup__player-actual-salary"><dd class="definition__value" style="color:'+color+';">' + getActualSalary(score) + '</dd><dt class="definition__key">Value</dt></dl>'
+				'<dl class="definition lineup__player-actual-salary"><dd class="definition__value" ">' + getActualSalary(score) + '</dd><dt class="definition__key">5x Salary</dt></dl>'
 				);
 
+			//Inject value multiple with color - style="color:'+color+';
+			$(ele).find('.lineup__player-salary').after(
+				'<dl class="definition lineup__player-actual-salary"><dd class="definition__value" ">' + getMultiple(getProjectedPoints(ele),salaryToInt(  $(ele).find('.lineup__player-salary').find('.definition__value').html())) +'x' +'</dd><dt class="definition__key">Proj Multi</dt></dl>'
+				);
+
+			//Inject projected points
+			$(ele).find('.lineup__player-score').after(
+				'<dl class="definition lineup__player-proj-score "><dd class="lineup__player-proj-score " style="color:green !important;">' + getProjectedPoints(ele) +'</dd></dl>'
+				);
+			theirProjTotal+=getProjectedPoints(ele);
 			//Total up actual salary to total for display
 				theirActualTotalSalary += salaryToInt(getActualSalary(score));
 				
@@ -99,6 +131,16 @@ function theirAliveScoring() {
 		$('.live-comparison-entry').find('.user-winnings').after(
 			'<dl class="entry-detail entry-their-actual-value"><dd>'+intToSalary(theirActualTotalSalary)+'</dd><dt>Actual Value</dt></dl>'
 			);
+
+		//Inject projected points
+		$('.live-comparison-entry').find('.score').append('<camel-number value="'+theirProjTotal+'"><span class="camel-number" style="color:green !important;"><em> '+theirProjTotal+'</em>.00</span></camel-number>');
+
+};
+
+//This grabs points of player and coverts it to a multiple
+function getMultiple(scr,sal)
+{
+	return Math.round(  (scr/(sal*.001))  *10)/10;
 };
 
 //This grabs points of player and coverts it to a salary string $XX,XXX
